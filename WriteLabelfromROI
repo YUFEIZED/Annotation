@@ -1,0 +1,60 @@
+root_dir = 'C:/file';
+label_dir = fullfile(root_dir,['label']); %should create a folder named label first
+Pedestrian_cell = Label{:,{'Pedestrian'}}; %here we only consider two classes:Pedestrian and Dontcare
+DontCare_cell = Label{:,{'DontCare'}};
+numob = numel(Pedestrian_cell);
+for i=1:numob
+    img_idx = i-1;  %from 0 , 0-based
+    fid = fopen(sprintf('%d.txt',label_dir,img_idx),'w'); %the name of txt file is like 1.txt, 2.txt, etc.
+    if isempty(DontCare_cell{i})==false 
+        [N,~] = size(DontCare_cell{i});
+        type = 'DontCare'; % set the truncation, occlusion and alpha as default values for dontcare class
+        cell = DontCare_cell{i};
+        for j = 1:N
+            fprintf(fid,'%s ',type);
+            fprintf(fid,'-1 '); %truncation
+            fprintf(fid,'-1 '); %occlusion
+            fprintf(fid,'-10 '); %alpha
+            fprintf(fid,'%.2f ',cell(j,1)); %bbox
+            fprintf(fid,'%.2f ',cell(j,2));
+            fprintf(fid,'%.2f ',cell(j,3)+cell(j,1));
+            fprintf(fid,'%.2f ',cell(j,4)+cell(j,2));
+            fprintf(fid,'-1 '); % 3D dimension
+            fprintf(fid,'-1 '); 
+            fprintf(fid,'-1 '); 
+            fprintf(fid,'-1000 ');% 3D location
+            fprintf(fid,'-1000 ');
+            fprintf(fid,'-1000 ');
+            fprintf(fid,'-10 '); % rotation-y
+            fprintf(fid,'0.00 '); % score
+        end
+    end
+    if isempty(Pedestrian_cell{i})==false
+        [N,~] = size(Pedestrian_cell{i});
+        type = 'Pedestrian';
+        truncation = 0.0;
+        occlusion = 0;
+        alpha = 0.0;
+        cell = Pedestrian_cell{i};
+        for j = 1:N
+            fprintf(fid,'%s ',type);
+            fprintf(fid,'%.2f ',truncation);
+            fprintf(fid,'%.d ',occlusion);
+            fprintf(fid,'0.00 '); % alpha
+            fprintf(fid,'%.2f ',cell(j,1)); %bbox
+            fprintf(fid,'%.2f ',cell(j,2));
+            fprintf(fid,'%.2f ',cell(j,3)+cell(j,1));
+            fprintf(fid,'%.2f ',cell(j,4)+cell(j,2));
+            fprintf(fid,'0.00 '); % 3D dimension
+            fprintf(fid,'0.00 '); 
+            fprintf(fid,'0.00 '); 
+            fprintf(fid,'0.00 ');% 3D location
+            fprintf(fid,'0.00 ');
+            fprintf(fid,'0.00 ');
+            fprintf(fid,'0.00 '); % rotation-y
+            fprintf(fid,'0.00 '); % score 
+        end        
+    end
+    fprintf(fid,'\n');
+    fclose(fid);
+end
